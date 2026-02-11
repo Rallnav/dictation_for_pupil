@@ -19,6 +19,6 @@ bin-release/
 
 # self
 __pychache__/
-
-
-
+.venv_dictation/
+__pycache__/
+.dictation_cache/
