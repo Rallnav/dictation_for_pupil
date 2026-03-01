@@ -27,7 +27,7 @@
 
 3. **安装 Python 依赖**
    ```bash
-   pip install edge-tts
+   pip install edge-tts textual
    ```
 
 4. **安装系统依赖**
@@ -95,6 +95,18 @@
    # 一次性生成配置文件中所有词汇的音频
    python main.py --preload-all
    ```
+
+10. **使用终端界面**
+    ```bash
+    # 启动美观的终端界面（推荐）
+    python simple_ui.py
+    ```
+
+11. **使用高级终端界面**
+    ```bash
+    # 启动基于 Textual 的高级终端界面
+    python ui.py
+    ```
 
 #### 配置文件说明
 
