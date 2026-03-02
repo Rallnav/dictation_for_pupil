@@ -1,5 +1,9 @@
 {
-  "selected_groups": ["garden1", "lesson1","lesson2","garden8"],
+  "selected_groups": [
+    "group1",
+    "group2",
+    "group3"
+  ],
   "interval": 3,
   "repeat_count": 3,
   "groups": {
@@ -10,7 +14,11 @@
         "世界",
         "Python",
         "编程",
-        "虚拟环境"
+        "虚拟环境",
+        "测试环境",
+        "test",
+        "删除了哦",
+        "牛啊"
       ]
     },
     "group2": {

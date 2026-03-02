@@ -102,6 +102,9 @@ class DictationEngine:
         for text in content:
             self._generate_audio(text)
         
+        # 清理未使用的音频文件
+        self._cleanup_unused_audio(content)
+        
         metadata['config_hash'] = config_hash
         self._save_metadata(metadata)
         print('音频预生成完成')
@@ -151,7 +154,13 @@ class DictationEngine:
         
         try:
             cmd = f'ffplay -nodisp -autoexit "{audio_path}"'
-            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # 使用 Popen 非阻塞播放，并设置超时
+            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # 等待音频播放完成，最多等待10秒
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            print(f'  [警告] 音频播放超时')
+            process.kill()
         except Exception as e:
             print(f'  [错误] 音频播放异常: {e}')
 
