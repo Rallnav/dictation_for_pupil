@@ -580,7 +580,9 @@ class AddGroupScreen(Screen):
                 content = [item.strip() for item in group_content.replace('，', ',').split(',')]
                 self.manager.add_group(group_id, group_name, content)
                 self.query_one("#status-bar", Static).update(f"已添加组别：{group_name}")
+                # 刷新组别管理界面
                 self.main_app.pop_screen()
+                self.main_app.push_screen(GroupManagementScreen(self.main_app))
             except Exception as e:
                 self.query_one("#status-bar", Static).update(f"错误：{e}")
         elif event.button.id == "cancel":
@@ -632,7 +634,9 @@ class EditGroupScreen(Screen):
                 content = [item.strip() for item in group_content.replace('，', ',').split(',')]
                 self.manager.update_group(self.group_id, name=group_name, content=content)
                 self.query_one("#status-bar", Static).update(f"已更新组别：{group_name}")
+                # 刷新组别管理界面
                 self.main_app.pop_screen()
+                self.main_app.push_screen(GroupManagementScreen(self.main_app))
             except Exception as e:
                 self.query_one("#status-bar", Static).update(f"错误：{e}")
         elif event.button.id == "cancel":

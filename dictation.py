@@ -153,14 +153,10 @@ class DictationEngine:
                 return
         
         try:
-            cmd = f'ffplay -nodisp -autoexit "{audio_path}"'
-            # 使用 Popen 非阻塞播放，并设置超时
-            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            # 等待音频播放完成，最多等待10秒
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            print(f'  [警告] 音频播放超时')
-            process.kill()
+            from playsound3 import playsound
+            playsound(str(audio_path))
+        except ImportError:
+            print('  [错误] playsound3 未安装，请运行: pip install playsound3')
         except Exception as e:
             print(f'  [错误] 音频播放异常: {e}')
 

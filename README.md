@@ -10,6 +10,7 @@
 - 音频预生成，播放无延迟
 - 配置文件管理，方便维护
 - 多组听写时自动混合随机
+- 美观的终端界面（基于 Textual）
 
 #### 安装教程
 
@@ -27,28 +28,27 @@
 
 3. **安装 Python 依赖**
    ```bash
-   pip install edge-tts textual
+   pip install -r requirements.txt
    ```
 
-4. **安装系统依赖**
-   ```bash
-   # 安装 ffmpeg（用于播放音频）
-   sudo apt update
-   sudo apt install ffmpeg
-   ```
-
-5. **配置词汇组**
+4. **配置词汇组**
    编辑 `config.json` 文件，添加你的词汇组。
 
 #### 使用说明
 
-1. **基本使用**
+1. **启动终端界面**（推荐）
+   ```bash
+   # 启动美观的终端界面
+   python ui.py
+   ```
+
+2. **命令行使用**（高级用户）
    ```bash
    # 使用配置文件中设置的组别
    python main.py
    ```
 
-2. **指定组别**
+3. **指定组别**
    ```bash
    # 指定一个组别（单组随机）
    python main.py -g group1
@@ -57,55 +57,43 @@
    python main.py -g group1 group2 group3
    ```
 
-3. **自定义间隔和次数**
+4. **自定义间隔和次数**
    ```bash
    # 设置间隔为 5 秒，重复 3 次
    python main.py -i 5 -r 3
    ```
 
-4. **列出所有组别**
+5. **列出所有组别**
    ```bash
    python main.py --list
    ```
 
-5. **添加新组别**
+6. **添加新组别**
    ```bash
    # 添加组别：ID 为 math，名称为数学，内容为"加法,减法,乘法,除法"
    python main.py --add-group math 数学 "加法,减法,乘法,除法"
    ```
 
-6. **删除组别**
+7. **删除组别**
    ```bash
    python main.py --delete-group math
    ```
 
-7. **设置默认听写组别**
+8. **设置默认听写组别**
    ```bash
    python main.py --set-groups group1 group2
    ```
 
-8. **不随机打乱听写顺序**
+9. **不随机打乱听写顺序**
    ```bash
    # 默认随机顺序，使用 --no-shuffle 保持原顺序
    python main.py -g group1 --no-shuffle
    ```
 
-9. **预生成所有音频**
-   ```bash
-   # 一次性生成配置文件中所有词汇的音频
-   python main.py --preload-all
-   ```
-
-10. **使用终端界面**
+10. **预生成所有音频**
     ```bash
-    # 启动美观的终端界面（推荐）
-    python simple_ui.py
-    ```
-
-11. **使用高级终端界面**
-    ```bash
-    # 启动基于 Textual 的高级终端界面
-    python ui.py
+    # 一次性生成配置文件中所有词汇的音频
+    python main.py --preload-all
     ```
 
 #### 配置文件说明
@@ -154,6 +142,57 @@
 - 程序会自动检测配置文件变化，只在需要时重新生成音频
 - 首次运行或配置文件变化时会预生成所有音频
 - 使用 `--preload-all` 参数可以一次性生成所有配置文件中的音频
+- 编辑或删除词汇后，音频文件会自动更新或清理
+
+#### 打包成 exe
+
+**打包说明**：
+
+本项目支持打包成 Windows 可执行文件（exe），方便在没有 Python 环境的电脑上使用。
+
+**快速打包（Windows，无需安装 Python）**：
+
+1. **下载项目源码**
+   ```bash
+   git clone <repository-url>
+   cd dictation_for_pupil
+   ```
+
+2. **运行自动打包脚本**
+   ```cmd
+   build_auto.bat
+   ```
+   
+   脚本会自动：
+   - 下载便携版 Python（约 10MB）
+   - 安装所有依赖
+   - 打包成 exe 文件
+   - 清理临时文件
+
+3. **打包产物**
+   - `dist/听写软件.exe` - 主程序文件
+   - `dist/使用说明.txt` - 用户使用说明
+
+**手动打包（Windows）**：
+
+详细步骤请参考：[BUILD_WINDOWS.md](BUILD_WINDOWS.md)
+
+**使用 GitHub Actions 自动打包**：
+
+1. 推送代码到 GitHub
+2. 进入 Actions 页面查看构建进度
+3. 构建完成后下载 exe 文件
+
+**系统要求**：
+
+- Windows 10 或更高版本
+- 无需安装额外依赖
+
+**注意事项**：
+
+1. 打包后的 exe 文件包含所有依赖，用户无需安装任何额外软件
+2. 打包后的 exe 文件会自动创建配置文件和音频缓存目录
+3. 首次运行时会生成所有音频文件，可能需要一些时间
 
 #### 参与贡献
 
