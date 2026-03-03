@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 打包脚本 - 将听写软件打包成exe
 使用 PyInstaller 进行打包
@@ -14,6 +15,18 @@ import sys
 import subprocess
 import platform
 from pathlib import Path
+
+# 设置标准输出编码为 UTF-8，解决 Windows 控制台中文显示问题
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+if sys.stderr.encoding != 'utf-8':
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
 
 
 def check_dependencies():
