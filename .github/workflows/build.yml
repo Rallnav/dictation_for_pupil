@@ -29,6 +29,10 @@ jobs:
     - name: Build executable
       run: python build.py
     
+    - name: Copy config.json to dist
+      run: |
+        copy config.json dist\
+    
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -36,6 +40,7 @@ jobs:
         path: |
           dist/听写软件.exe
           dist/使用说明.txt
+          dist/config.json
 
   build-linux:
     runs-on: ubuntu-latest
@@ -58,6 +63,10 @@ jobs:
     - name: Build executable
       run: python build.py
     
+    - name: Copy config.json to dist
+      run: |
+        cp config.json dist/
+    
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -65,6 +74,7 @@ jobs:
         path: |
           dist/听写软件
           dist/使用说明.txt
+          dist/config.json
 
   release:
     needs: [build-windows, build-linux]
