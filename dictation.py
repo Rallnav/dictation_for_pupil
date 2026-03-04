@@ -6,6 +6,7 @@ import json
 import random
 import re
 import os
+import asyncio
 from pathlib import Path
 
 
@@ -22,14 +23,15 @@ class DictationEngine:
 
     def _check_audio_setup(self):
         """检查音频设置"""
-        # 检查 edge-tts
-        if not shutil.which('edge-tts'):
+        # 检查 edge-tts Python 库
+        try:
+            import edge_tts
+            self.use_edge_tts = True
+            print(f'使用 edge-tts 语音: {self.voice}')
+        except ImportError:
             print('警告: edge-tts 未安装，无法播放音频')
             print('请运行: pip install edge-tts')
             self.use_edge_tts = False
-        else:
-            self.use_edge_tts = True
-            print(f'使用 edge-tts 语音: {self.voice}')
         
         # 检查音频播放库
         try:
@@ -61,8 +63,8 @@ class DictationEngine:
         filename = self._get_audio_filename(text)
         return self.cache_dir / filename
 
-    def _generate_audio(self, text):
-        """生成音频文件"""
+    async def _generate_audio_async(self, text):
+        """异步生成音频文件"""
         audio_path = self._get_audio_path(text)
         
         if audio_path.exists():
@@ -71,15 +73,10 @@ class DictationEngine:
         print(f'  生成音频: {text}')
         print(f'  保存路径: {audio_path}')
         
-        # 使用 edge-tts 生成音频
-        cmd = ['edge-tts', '-t', text, '-v', self.voice, '--write-media', str(audio_path)]
-        
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
-            if result.returncode != 0:
-                print(f'  [错误] 音频生成失败: {result.stderr.strip()}')
-                return None
+            import edge_tts
+            communicate = edge_tts.Communicate(text=text, voice=self.voice)
+            await communicate.save(str(audio_path))
             
             # 验证文件是否生成
             if audio_path.exists() and audio_path.stat().st_size > 0:
@@ -89,12 +86,18 @@ class DictationEngine:
                 print(f'  [错误] 音频文件未生成或为空')
                 return None
                 
-        except subprocess.TimeoutExpired:
-            print(f'  [错误] 音频生成超时')
-            return None
         except Exception as e:
             print(f'  [错误] 音频生成异常: {e}')
             return None
+
+    def _generate_audio(self, text):
+        """生成音频文件（同步接口）"""
+        if not self.use_edge_tts:
+            print('  [跳过] edge-tts 未安装')
+            return None
+        
+        # 运行异步函数
+        return asyncio.run(self._generate_audio_async(text))
 
     def _load_metadata(self):
         """加载元数据"""
