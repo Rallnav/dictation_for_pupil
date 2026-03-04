@@ -1,3 +1,4 @@
 edge-tts>=6.1.0
 textual>=0.50.0
 playsound3>=0.1.0
+pygame>=2.5.0

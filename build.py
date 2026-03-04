@@ -64,6 +64,13 @@ def check_dependencies():
     except ImportError:
         print("✗ playsound3 未安装，请先安装: pip install playsound3")
         sys.exit(1)
+    
+    try:
+        import pygame
+        print("✓ pygame 已安装")
+    except ImportError:
+        print("✗ pygame 未安装，请先安装: pip install pygame")
+        sys.exit(1)
 
 
 def get_executable_name():
@@ -111,7 +118,9 @@ def build_exe():
         "--hidden-import", "edge_tts",
         "--hidden-import", "textual",
         "--hidden-import", "playsound3",
+        "--hidden-import", "pygame",
         "--collect-all", "textual",
+        "--collect-all", "pygame",
     ]
     
     # 注意：Textual 需要控制台窗口，不能添加 --windowed 参数
