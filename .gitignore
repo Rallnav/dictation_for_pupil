@@ -36,6 +36,7 @@ python.zip
 
 # Audio cache
 .dictation_cache/
+dication_audio/
 
 # IDE
 .vscode/
