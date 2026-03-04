@@ -114,9 +114,8 @@ def build_exe():
         "--collect-all", "textual",
     ]
     
-    # Windows 平台添加 --windowed 参数
-    if is_windows:
-        cmd.append("--windowed")
+    # 注意：Textual 需要控制台窗口，不能添加 --windowed 参数
+    # --windowed 会导致 Textual 无法正常工作
     
     cmd.append("ui.py")
     
