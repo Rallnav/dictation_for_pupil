@@ -517,20 +517,26 @@ class GroupManagementScreen(Screen):
             self.main_app.push_screen(AddGroupScreen(self.main_app))
         elif event.button.id == "edit-group":
             # 获取选中的组别
-            table = self.query_one(DataTable)
+            table = self.query_one("#groups-table", DataTable)
             if table.cursor_row is not None:
                 group_id = table.get_row_at(table.cursor_row)[0]
                 self.main_app.push_screen(EditGroupScreen(self.main_app, group_id))
         elif event.button.id == "delete-group":
             # 获取选中的组别
-            table = self.query_one(DataTable)
+            table = self.query_one("#groups-table", DataTable)
             if table.cursor_row is not None:
                 group_id = table.get_row_at(table.cursor_row)[0]
                 try:
                     self.manager.delete_group(group_id)
                     self.query_one("#status-bar", Static).update(f"已删除组别：{group_id}")
-                    # 刷新界面
-                    self.main_app.push_screen(GroupManagementScreen(self.main_app))
+                    # 刷新当前界面的表格
+                    table.clear()
+                    groups = self.manager.get_groups()
+                    for group_id, group_info in groups.items():
+                        preview = ", ".join(group_info['content'][:5])
+                        if len(group_info['content']) > 5:
+                            preview += "..."
+                        table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
                 except Exception as e:
                     self.query_one("#status-bar", Static).update(f"错误：{e}")
         elif event.button.id == "back":

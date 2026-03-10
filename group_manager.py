@@ -52,6 +52,16 @@ class GroupManager:
             raise ValueError(f"组别 {group_id} 不存在")
         del groups[group_id]
         self.config['groups'] = groups
+        
+        # 从 selected_groups 中移除已删除的组别
+        if 'selected_groups' in self.config:
+            if group_id in self.config['selected_groups']:
+                self.config['selected_groups'].remove(group_id)
+        
+        # 从 default_group 中移除已删除的组别
+        if 'default_group' in self.config and self.config['default_group'] == group_id:
+            self.config['default_group'] = None
+        
         self.save_config()
 
     def get_interval(self):
