@@ -518,7 +518,7 @@ class GroupManagementScreen(Screen):
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
         if cursor_row is not None and cursor_row < len(groups):
-            table.cursor_row = cursor_row
+            table.cursor_coordinate = (cursor_row, 0)
         table.scroll_to(y=scroll_y, animate=False)
     
     def watch_stack_updates(self, old_value: int, new_value: int) -> None:
