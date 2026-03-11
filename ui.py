@@ -516,6 +516,11 @@ class GroupManagementScreen(Screen):
             if len(group_info['content']) > 5:
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
+        self.call_later(self._restore_scroll, scroll_y)
+    
+    def _restore_scroll(self, scroll_y: int) -> None:
+        """恢复滚动位置"""
+        table = self.query_one("#groups-table", DataTable)
         table.scroll_to(y=scroll_y, animate=False)
     
     def watch_stack_updates(self, old_value: int, new_value: int) -> None:
