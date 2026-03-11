@@ -101,11 +101,16 @@ jobs:
         name: 听写软件-Linux
         path: dist-linux
     
+    - name: Create ZIP archives
+      run: |
+        cd dist-windows && zip -r ../听写软件-Windows.zip . && cd ..
+        cd dist-linux && zip -r ../听写软件-Linux.zip . && cd ..
+    
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          dist-windows/*
-          dist-linux/*
+          听写软件-Windows.zip
+          听写软件-Linux.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
