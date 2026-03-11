@@ -33,9 +33,9 @@ jobs:
     - name: Build executable
       run: python build.py
     
-    - name: Copy config.json to dist
+    - name: Verify build artifacts
       run: |
-        copy config.json dist\
+        ls -la dist/
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -67,9 +67,9 @@ jobs:
     - name: Build executable
       run: python build.py
     
-    - name: Copy config.json to dist
+    - name: Verify build artifacts
       run: |
-        cp config.json dist/
+        ls -la dist/
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
