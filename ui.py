@@ -516,9 +516,10 @@ class GroupManagementScreen(Screen):
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
     
-    def on_resume(self) -> None:
-        """屏幕重新显示时刷新表格"""
-        self._refresh_table()
+    def watch_stack_updates(self, old_value: int, new_value: int) -> None:
+        """屏幕恢复时刷新表格"""
+        if new_value > old_value:
+            self._refresh_table()
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """处理按钮点击事件"""
