@@ -139,11 +139,17 @@ def build_exe():
     print("\n✓ 打包完成！")
     print(f"可执行文件位置: dist/{exe_name}")
     
+    # 确保 dist 目录存在
+    dist_dir = Path("dist")
+    dist_dir.mkdir(exist_ok=True)
+    
     # 复制 config.json 到 dist 目录
     import shutil
     if os.path.exists("config.json"):
         shutil.copy("config.json", "dist/config.json")
         print("✓ 已复制 config.json 到 dist 目录")
+    else:
+        print("⚠ 警告: config.json 文件不存在，跳过复制")
     
     return exe_name
 

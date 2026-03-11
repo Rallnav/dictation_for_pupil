@@ -81,6 +81,7 @@ jobs:
         path: |
           dist/听写软件
           dist/使用说明.txt
+          dist/config.json
 
   release:
     needs: [build-windows, build-linux]
