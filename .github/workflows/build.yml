@@ -3,6 +3,9 @@ name: Build Executables
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [ main, master ]
@@ -35,7 +38,7 @@ jobs:
     
     - name: Verify build artifacts
       run: |
-        ls -la dist/
+        dir dist\
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
