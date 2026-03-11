@@ -516,10 +516,6 @@ class GroupManagementScreen(Screen):
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
     
-    def on_resume(self) -> None:
-        """屏幕重新显示时刷新表格"""
-        self._refresh_table()
-    
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """处理按钮点击事件"""
         if event.button.id == "add-group":
@@ -595,8 +591,9 @@ class AddGroupScreen(Screen):
                 content = [item.strip() for item in group_content.replace('，', ',').split(',')]
                 self.manager.add_group(group_id, group_name, content)
                 self.query_one("#status-bar", Static).update(f"已添加组别：{group_name}")
-                # 返回到组别管理界面
+                # 先弹出当前界面，再推送新的组别管理界面
                 self.main_app.pop_screen()
+                self.main_app.push_screen(GroupManagementScreen(self.main_app))
             except Exception as e:
                 self.query_one("#status-bar", Static).update(f"错误：{e}")
         elif event.button.id == "cancel":
@@ -648,8 +645,9 @@ class EditGroupScreen(Screen):
                 content = [item.strip() for item in group_content.replace('，', ',').split(',')]
                 self.manager.update_group(self.group_id, name=group_name, content=content)
                 self.query_one("#status-bar", Static).update(f"已更新组别：{group_name}")
-                # 返回到组别管理界面
+                # 先弹出当前界面，再推送新的组别管理界面
                 self.main_app.pop_screen()
+                self.main_app.push_screen(GroupManagementScreen(self.main_app))
             except Exception as e:
                 self.query_one("#status-bar", Static).update(f"错误：{e}")
         elif event.button.id == "cancel":
