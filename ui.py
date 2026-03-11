@@ -509,6 +509,7 @@ class GroupManagementScreen(Screen):
         """刷新组别表格"""
         table = self.query_one("#groups-table", DataTable)
         scroll_y = table.scroll_y
+        cursor_row = table.cursor_row
         table.clear()
         groups = self.manager.get_groups()
         for group_id, group_info in groups.items():
@@ -516,11 +517,8 @@ class GroupManagementScreen(Screen):
             if len(group_info['content']) > 5:
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
-        self.call_later(self._restore_scroll, scroll_y)
-    
-    def _restore_scroll(self, scroll_y: int) -> None:
-        """恢复滚动位置"""
-        table = self.query_one("#groups-table", DataTable)
+        if cursor_row is not None and cursor_row < len(groups):
+            table.cursor_row = cursor_row
         table.scroll_to(y=scroll_y, animate=False)
     
     def watch_stack_updates(self, old_value: int, new_value: int) -> None:
