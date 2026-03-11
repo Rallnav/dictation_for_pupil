@@ -508,6 +508,7 @@ class GroupManagementScreen(Screen):
     def _refresh_table(self):
         """刷新组别表格"""
         table = self.query_one("#groups-table", DataTable)
+        scroll_y = table.scroll_y
         table.clear()
         groups = self.manager.get_groups()
         for group_id, group_info in groups.items():
@@ -515,6 +516,7 @@ class GroupManagementScreen(Screen):
             if len(group_info['content']) > 5:
                 preview += "..."
             table.add_row(group_id, group_info['name'], str(len(group_info['content'])), preview)
+        table.scroll_to(y=scroll_y, animate=False)
     
     def watch_stack_updates(self, old_value: int, new_value: int) -> None:
         """屏幕恢复时刷新表格"""
