@@ -33,6 +33,10 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
+    - name: Clean dist directory
+      run: |
+        if exist dist rmdir /s /q dist
+    
     - name: Build executable
       run: python build.py
     
@@ -66,6 +70,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+    
+    - name: Clean dist directory
+      run: rm -rf dist
     
     - name: Build executable
       run: python build.py
@@ -105,6 +112,9 @@ jobs:
       run: |
         cd dist-windows && zip -r ../听写软件-Windows.zip . && cd ..
         cd dist-linux && zip -r ../听写软件-Linux.zip . && cd ..
+    
+    - name: Clean up artifacts
+      run: rm -rf dist-windows dist-linux
     
     - name: Create Release
       uses: softprops/action-gh-release@v1

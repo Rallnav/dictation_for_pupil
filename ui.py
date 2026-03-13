@@ -718,6 +718,12 @@ class SettingsScreen(Screen):
             id="settings-selection-buttons"
         )
         
+        # 音频管理按钮
+        yield Horizontal(
+            Button("清理多余音频", id="cleanup-audio"),
+            id="settings-audio-buttons"
+        )
+        
         # 操作按钮
         yield Horizontal(
             Button("保存", id="save"),
@@ -768,6 +774,22 @@ class SettingsScreen(Screen):
         elif event.button.id == "select-none":
             self.selected_groups = []
             self._update_table_selection()
+        elif event.button.id == "cleanup-audio":
+            # 清理多余音频
+            self.query_one("#status-bar", Static).update("正在清理音频...")
+            
+            # 在后台线程中执行清理
+            import threading
+            def cleanup_thread():
+                try:
+                    self.main_app.engine.cleanup_unused_audio(self.manager)
+                    self.query_one("#status-bar", Static).update("音频清理完成")
+                except Exception as e:
+                    self.query_one("#status-bar", Static).update(f"清理失败：{e}")
+            
+            thread = threading.Thread(target=cleanup_thread)
+            thread.daemon = True
+            thread.start()
         elif event.button.id == "save":
             interval_input = self.query_one("#interval", Input)
             repeat_input = self.query_one("#repeat-count", Input)

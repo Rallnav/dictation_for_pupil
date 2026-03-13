@@ -119,7 +119,11 @@ class DictationEngine:
             return hashlib.md5(f.read()).hexdigest()
 
     def _cleanup_unused_audio(self, all_content):
-        """清理未使用的音频文件"""
+        """清理未使用的音频文件
+        
+        Args:
+            all_content: 所有组别的内容列表（全表）
+        """
         if not self.cache_dir.exists():
             return
         
@@ -144,63 +148,91 @@ class DictationEngine:
             print('edge-tts 未安装，跳过音频预生成')
             return
         
-        config_hash = self._get_config_hash()
-        metadata = self._load_metadata()
+        # 只生成缺失的音频
+        missing_audio = [text for text in content if not self._get_audio_path(text).exists()]
         
-        if metadata.get('config_hash') == config_hash:
-            cached_count = sum(1 for text in content if self._get_audio_path(text).exists())
-            if cached_count == len(content):
-                print(f'音频缓存已就绪 ({len(content)} 个文件)')
-                print(f'音频文件位置: {self.cache_dir}')
-                return
+        if not missing_audio:
+            print(f'音频缓存已就绪 ({len(content)} 个文件)')
+            print(f'音频文件位置: {self.cache_dir}')
+            return
         
-        print(f'预生成音频 ({len(content)} 个文件)...')
+        print(f'预生成缺失的音频 ({len(missing_audio)} 个文件)...')
         print(f'音频文件将保存到: {self.cache_dir}')
         
         success_count = 0
-        for text in content:
+        for text in missing_audio:
             if self._generate_audio(text):
                 success_count += 1
         
-        # 清理未使用的音频文件
-        self._cleanup_unused_audio(content)
-        
-        metadata['config_hash'] = config_hash
-        self._save_metadata(metadata)
-        print(f'音频预生成完成 ({success_count}/{len(content)} 成功)')
+        print(f'音频预生成完成 ({success_count}/{len(missing_audio)} 成功)')
 
+    def get_all_content(self, group_manager):
+        """获取所有组别的内容（全表）
+        
+        Args:
+            group_manager: 组别管理器实例
+            
+        Returns:
+            list: 所有组别的内容列表
+        """
+        all_content = []
+        groups = group_manager.get_groups()
+        for group_id, group_info in groups.items():
+            all_content.extend(group_info['content'])
+        return all_content
+    
+    def cleanup_unused_audio(self, group_manager):
+        """清理多余的音频文件
+        
+        使用全表来清理未使用的音频文件
+        
+        Args:
+            group_manager: 组别管理器实例
+        """
+        if not self.use_edge_tts:
+            print('edge-tts 未安装，无法清理音频')
+            return
+        
+        all_content = self.get_all_content(group_manager)
+        
+        if not all_content:
+            print('配置文件中没有词汇')
+            return
+        
+        print('清理未使用的音频文件...')
+        self._cleanup_unused_audio(all_content)
+        print('音频清理完成')
+    
     def preload_all_audio(self, group_manager):
         """预生成所有音频"""
         if not self.use_edge_tts:
             print('edge-tts 未安装，无法生成音频')
             return
         
-        all_content = []
-        groups = group_manager.get_groups()
-        for group_id, group_info in groups.items():
-            all_content.extend(group_info['content'])
+        all_content = self.get_all_content(group_manager)
         
         if not all_content:
             print('配置文件中没有词汇')
             return
         
-        print(f'预生成所有音频 ({len(all_content)} 个文件)...')
+        # 只生成缺失的音频
+        missing_audio = [text for text in all_content if not self._get_audio_path(text).exists()]
+        
+        if not missing_audio:
+            print(f'所有音频已就绪 ({len(all_content)} 个文件)')
+            print(f'音频文件位置: {self.cache_dir}')
+            return
+        
+        print(f'预生成缺失的音频 ({len(missing_audio)} 个文件)...')
         print(f'音频文件将保存到: {self.cache_dir}')
         
         success_count = 0
-        for i, text in enumerate(all_content, 1):
-            print(f'  [{i}/{len(all_content)}] {text}')
+        for i, text in enumerate(missing_audio, 1):
+            print(f'  [{i}/{len(missing_audio)}] {text}')
             if self._generate_audio(text):
                 success_count += 1
         
-        print('清理未使用的音频文件...')
-        self._cleanup_unused_audio(all_content)
-        
-        config_hash = self._get_config_hash()
-        metadata = self._load_metadata()
-        metadata['config_hash'] = config_hash
-        self._save_metadata(metadata)
-        print(f'所有音频预生成完成 ({success_count}/{len(all_content)} 成功)')
+        print(f'所有音频预生成完成 ({success_count}/{len(missing_audio)} 成功)')
 
     def speak(self, text):
         """播放音频"""
