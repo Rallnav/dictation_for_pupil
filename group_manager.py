@@ -19,7 +19,8 @@ class GroupManager:
             default_config = {
                 "selected_groups": [],
                 "interval": 3,
-                "repeat_count": 2
+                "repeat_count": 2,
+                "long_word_extension": True
             }
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(default_config, f, ensure_ascii=False, indent=2)
@@ -191,4 +192,11 @@ class GroupManager:
         # if group_id not in self.get_groups():
         #     raise ValueError(f"组别 {group_id} 不存在")
         self.config['default_group'] = group_id
+        self.save_config()
+
+    def get_long_word_extension(self):
+        return self.config.get('long_word_extension', True)
+
+    def set_long_word_extension(self, value):
+        self.config['long_word_extension'] = value
         self.save_config()

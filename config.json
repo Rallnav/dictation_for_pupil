@@ -1,6 +1,5 @@
 {
   "selected_groups": [
-    "group1",
     "group2",
     "group3"
   ],
@@ -15,14 +14,6 @@
         "昨天",
         "温暖",
         "爱心"
-      ],
-      "source_file": "double.json"
-    },
-    "group1": {
-      "name": "测试重复组别",
-      "content": [
-        "测试1",
-        "测试2"
       ],
       "source_file": "double.json"
     },
@@ -1552,5 +1543,6 @@
       ],
       "source_file": "default.json"
     }
-  }
+  },
+  "long_word_extension": true
 }

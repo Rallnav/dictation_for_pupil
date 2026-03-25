@@ -160,7 +160,7 @@ class DictationApp(App):
 class MainScreen(Screen):
     """主界面"""
     
-    status_message = var("")
+    status_message = var[str]("")
     
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
@@ -226,8 +226,12 @@ class DictationScreen(Screen):
         self.repeat_count = self.manager.get_repeat_count()
         self.shuffle = True
         self.dictating = False
+        self.paused = False
         self.stop_requested = False
         self.dictation_thread = None
+        self.current_index = 0
+        self.current_repeat = 0
+        self.dictated_words = []  # 记录听写的单词顺序
     
     def compose(self) -> ComposeResult:
         """构建界面 - 简化布局"""
@@ -236,7 +240,7 @@ class DictationScreen(Screen):
         # 选择组别 - 简化表格
         yield Static("点击选择组别:")
         table = DataTable(id="group-table")
-        table.add_columns("✓", "组别", "词汇")
+        table.add_columns("✓", "ID", "组别", "词汇")
         table.cursor_type = "row"
         table.zebra_stripes = True
         
@@ -245,7 +249,7 @@ class DictationScreen(Screen):
             status = "✓" if group_id in self.selected_groups else ""
             name = group_info['name']
             preview = ", ".join(group_info['content'][:3])
-            table.add_row(status, name, preview, key=group_id)
+            table.add_row(status, group_id, name, preview, key=group_id)
         yield table
         
         # 已选中的组别显示
@@ -268,9 +272,13 @@ class DictationScreen(Screen):
             id="settings-grid"
         )
         
+        # 长词延长选项
+        yield Checkbox("长词延长（对长单词间隔时间增加 1s）", value=self.manager.get_long_word_extension(), id="long-word-extension")
+        
         # 操作按钮
         yield Horizontal(
             Button("开始", id="start", variant="primary"),
+            Button("暂停", id="pause", disabled=True),
             Button("返回", id="back"),
             id="action-buttons"
         )
@@ -316,29 +324,58 @@ class DictationScreen(Screen):
             self.notify("已取消所有选择", severity="information")
         elif event.button.id == "start":
             if self.dictating:
-                self.notify("听写正在进行中...", severity="warning")
+                if self.paused:
+                    # 继续听写
+                    self.paused = False
+                    self.query_one("#start", Button).label = "开始"
+                    self.query_one("#pause", Button).label = "暂停"
+                    self._update_progress("继续听写...")
+                    self.notify("继续听写", severity="information")
+                else:
+                    self.notify("听写正在进行中...", severity="warning")
                 return
             
             try:
                 interval = self.interval
                 repeat_count = self.repeat_count
                 shuffle = self.shuffle
+                long_word_extension = self.query_one("#long-word-extension", Checkbox).value
                 
                 self.dictating = True
+                self.paused = False
+                self.query_one("#start", Button).label = "开始"
+                self.query_one("#pause", Button).label = "暂停"
+                self.query_one("#pause", Button).disabled = False
                 self.query_one("#progress-text", Static).update("准备开始听写...")
                 
                 # 开始听写（在后台线程中执行，避免阻塞UI）
                 self.dictation_thread = threading.Thread(
                     target=self._run_dictation_thread,
-                    args=(interval, repeat_count, shuffle)
+                    args=(interval, repeat_count, shuffle, long_word_extension)
                 )
                 self.dictation_thread.daemon = True
                 self.dictation_thread.start()
                 
             except Exception as e:
                 self.dictating = False
+                self.paused = False
+                self.query_one("#pause", Button).disabled = True
                 self.query_one("#progress-text", Static).update(f"错误：{e}")
                 self.notify(f"错误：{e}", severity="error")
+        elif event.button.id == "pause":
+            if self.dictating:
+                if self.paused:
+                    # 继续听写
+                    self.paused = False
+                    self.query_one("#pause", Button).label = "暂停"
+                    self._set_progress_text("继续听写...")
+                    self.notify("继续听写", severity="information")
+                else:
+                    # 暂停听写
+                    self.paused = True
+                    self.query_one("#pause", Button).label = "继续"
+                    self._set_progress_text("听写已暂停...")
+                    self.notify("听写已暂停", severity="information")
         elif event.button.id == "back":
             # 如果有正在进行的听写，立即停止
             if self.dictating:
@@ -353,10 +390,10 @@ class DictationScreen(Screen):
                 self.notify("已终止听写", severity="warning")
             self.main_app.pop_screen()
     
-    def _run_dictation_thread(self, interval, repeat_count, shuffle):
+    def _run_dictation_thread(self, interval, repeat_count, shuffle, long_word_extension):
         """在后台线程中运行听写"""
         try:
-            self._run_dictation(interval, repeat_count, shuffle)
+            self._run_dictation(interval, repeat_count, shuffle, long_word_extension)
             self.app.call_from_thread(self._on_dictation_complete)
         except Exception as e:
             self.app.call_from_thread(self._on_dictation_error, str(e))
@@ -364,21 +401,34 @@ class DictationScreen(Screen):
     def _on_dictation_complete(self):
         """听写完成回调"""
         self.dictating = False
+        self.paused = False
+        self.query_one("#pause", Button).disabled = True
+        self.query_one("#pause", Button).label = "暂停"
+        
+        # 显示听写完成信息
         self.query_one("#progress-text", Static).update("听写完成！")
         self.notify("听写完成！", severity="information")
+        
+        # 如果有听写的单词，显示单词列表
+        if self.dictated_words:
+            self.main_app.push_screen(DictationResultScreen(self.main_app, self.dictated_words))
     
     def _on_dictation_error(self, error_msg):
         """听写错误回调"""
         self.dictating = False
+        self.paused = False
+        self.query_one("#pause", Button).disabled = True
+        self.query_one("#pause", Button).label = "暂停"
         self.query_one("#progress-text", Static).update(f"错误：{error_msg}")
         self.notify(f"错误：{error_msg}", severity="error")
     
-    def _run_dictation(self, interval, repeat_count, shuffle):
+    def _run_dictation(self, interval, repeat_count, shuffle, long_word_extension):
         """在后台线程中运行听写"""
         import time
         
         # 重置停止标志
         self.stop_requested = False
+        self.paused = False
         
         if len(self.selected_groups) == 1:
             group_id = self.selected_groups[0]
@@ -398,18 +448,50 @@ class DictationScreen(Screen):
                 random.shuffle(content)
                 self._update_progress("已随机打乱听写顺序")
             
+            # 清空听写单词记录
+            self.dictated_words = []
+            
             for i, text in enumerate(content, 1):
                 if self.stop_requested:
                     break
+                # 检查是否暂停
+                while self.paused:
+                    if self.stop_requested:
+                        return
+                    time.sleep(0.1)
+                
                 self._update_progress(f"[{i}/{len(content)}] {text}")
+                # 计算当前单词的间隔时间
+                current_interval = interval
+                if long_word_extension and len(text) > 4:
+                    current_interval += 1
+                
+                # 记录听写的单词
+                self.dictated_words.append(text)
+                
                 for j in range(repeat_count):
                     if self.stop_requested:
                         break
+                    # 检查是否暂停
+                    while self.paused:
+                        if self.stop_requested:
+                            return
+                        time.sleep(0.1)
                     self.engine.speak(text)
                     if j < repeat_count - 1:
-                        time.sleep(interval)
+                        # 检查是否暂停
+                        while self.paused:
+                            if self.stop_requested:
+                                return
+                            time.sleep(0.1)
+                        time.sleep(current_interval)
                 if i < len(content) and not self.stop_requested:
-                    time.sleep(interval)
+                    # 检查是否暂停
+                    while self.paused:
+                        if self.stop_requested:
+                            return
+                        time.sleep(0.1)
+                    time.sleep(current_interval)
         else:
             all_content = []
             for group_id in self.selected_groups:
@@ -431,18 +513,50 @@ class DictationScreen(Screen):
                 random.shuffle(all_content)
                 self._update_progress("已随机打乱听写顺序")
             
+            # 清空听写单词记录
+            self.dictated_words = []
+            
             for i, (text, group_id, group_name) in enumerate(all_content, 1):
                 if self.stop_requested:
                     break
+                # 检查是否暂停
+                while self.paused:
+                    if self.stop_requested:
+                        return
+                    time.sleep(0.1)
+                
                 self._update_progress(f"[{i}/{len(all_content)}] {text} [{group_name}]")
+                # 计算当前单词的间隔时间
+                current_interval = interval
+                if long_word_extension and len(text) > 4:
+                    current_interval += 1
+                
+                # 记录听写的单词
+                self.dictated_words.append(text)
+                
                 for j in range(repeat_count):
                     if self.stop_requested:
                         break
+                    # 检查是否暂停
+                    while self.paused:
+                        if self.stop_requested:
+                            return
+                        time.sleep(0.1)
                     self.engine.speak(text)
                     if j < repeat_count - 1:
-                        time.sleep(interval)
+                        # 检查是否暂停
+                        while self.paused:
+                            if self.stop_requested:
+                                return
+                            time.sleep(0.1)
+                        time.sleep(current_interval)
                 if i < len(all_content) and not self.stop_requested:
-                    time.sleep(interval)
+                    # 检查是否暂停
+                    while self.paused:
+                        if self.stop_requested:
+                            return
+                        time.sleep(0.1)
+                    time.sleep(current_interval)
     
     def _update_progress(self, message):
         """更新进度显示（线程安全）"""
@@ -690,10 +804,13 @@ class SettingsScreen(Screen):
         yield Static("默认重复次数：")
         yield Input(str(self.config.get('repeat_count', 2)), id="repeat-count")
         
+        # 长词延长选项
+        yield Checkbox("长词延长（对长单词间隔时间增加 1s）", value=self.config.get('long_word_extension', True), id="long-word-extension")
+        
         # 默认选中的组别 - 使用表格形式
         yield Static("点击选择默认组别：")
         table = DataTable(id="settings-group-table")
-        table.add_columns("✓", "组别", "数量", "词汇预览")
+        table.add_columns("✓", "ID", "组别", "数量", "词汇预览")
         table.cursor_type = "row"
         table.zebra_stripes = True
         
@@ -705,7 +822,7 @@ class SettingsScreen(Screen):
             preview = ", ".join(group_info['content'][:3])
             if len(group_info['content']) > 3:
                 preview += "..."
-            table.add_row(status, name, count, preview, key=group_id)
+            table.add_row(status, group_id, name, count, preview, key=group_id)
         yield table
         
         # 已选中的组别显示
@@ -798,9 +915,13 @@ class SettingsScreen(Screen):
                 interval = int(interval_input.value)
                 repeat_count = int(repeat_input.value)
                 
+                # 长词延长选项
+                long_word_extension = self.query_one("#long-word-extension", Checkbox).value
+                
                 # 更新配置
                 self.config['interval'] = interval
                 self.config['repeat_count'] = repeat_count
+                self.config['long_word_extension'] = long_word_extension
                 self.config['selected_groups'] = self.selected_groups
                 
                 # 保存配置
@@ -908,6 +1029,42 @@ class PreloadAudioScreen(Screen):
         """处理按钮点击事件"""
         if event.button.id == "back":
             self.preloading = False
+            self.main_app.pop_screen()
+
+
+class DictationResultScreen(Screen):
+    """听写结果界面"""
+    
+    def __init__(self, app, dictated_words, **kwargs):
+        super().__init__(**kwargs)
+        self.main_app = app
+        self.dictated_words = dictated_words
+    
+    def compose(self) -> ComposeResult:
+        """构建界面"""
+        yield Static("听写结果", classes="card-title")
+        
+        # 显示听写的单词列表
+        yield Static("本次听写的单词（按顺序）：")
+        
+        # 使用 DataTable 显示单词列表
+        table = DataTable(id="result-table")
+        table.add_columns("序号", "单词")
+        table.zebra_stripes = True
+        
+        for i, word in enumerate(self.dictated_words, 1):
+            table.add_row(str(i), word)
+        yield table
+        
+        # 操作按钮
+        yield Horizontal(
+            Button("返回", id="back"),
+            id="action-buttons"
+        )
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """处理按钮点击事件"""
+        if event.button.id == "back":
             self.main_app.pop_screen()
 
 
