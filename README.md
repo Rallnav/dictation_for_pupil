@@ -9,6 +9,8 @@
 - 高质量中文语音（使用 edge-tts）
 - 音频预生成，播放无延迟
 - 配置文件管理，方便维护
+- 多文件配置管理，支持从 groups 目录加载多个配置文件
+- 重复组别 ID 支持，自动处理多文件重名冲突
 - 多组听写时自动混合随机
 - 美观的终端界面（基于 Textual）
 
@@ -98,7 +100,23 @@
 
 #### 配置文件说明
 
-`config.json` 文件结构：
+**主配置文件 `config.json` 结构**：
+
+```json
+{
+  "selected_groups": ["group1"],
+  "interval": 3,
+  "repeat_count": 2
+}
+```
+
+- `selected_groups`: 默认听写的组别列表
+- `interval`: 每个词汇重复播放之间的间隔（秒）
+- `repeat_count`: 每个词汇重复播放的次数
+
+**组别配置文件**：
+
+组别配置文件存放在 `groups/` 目录中，每个 JSON 文件可以包含多个组别：
 
 ```json
 {
@@ -107,19 +125,13 @@
       "name": "第一组",
       "content": ["词汇1", "词汇2", "词汇3"]
     }
-  },
-  "selected_groups": ["group1"],
-  "interval": 3,
-  "repeat_count": 2
+  }
 }
 ```
 
-- `groups`: 词汇组字典
-  - `name`: 组别名称
-  - `content`: 词汇列表
-- `selected_groups`: 默认听写的组别列表
-- `interval`: 每个词汇重复播放之间的间隔（秒）
-- `repeat_count`: 每个词汇重复播放的次数
+- 系统会自动加载 `groups/` 目录中的所有 JSON 文件
+- 支持重复的组别 ID，系统会自动添加后缀避免冲突
+- 新增的组别默认保存到 `groups/default.json` 文件中
 
 #### 命令行参数
 
