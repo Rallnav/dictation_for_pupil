@@ -1,0 +1,70 @@
+{
+  "pages": [
+    {
+      "path": "pages/dictation/index",
+      "style": {
+        "navigationBarTitleText": "听写练习",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/groups/index",
+      "style": {
+        "navigationBarTitleText": "组别管理",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/settings/index",
+      "style": {
+        "navigationBarTitleText": "系统设置",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/ocr/index",
+      "style": {
+        "navigationBarTitleText": "文字识别",
+        "enablePullDownRefresh": false
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "听写软件",
+    "navigationBarBackgroundColor": "#667eea",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#667eea",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/dictation/index",
+        "text": "听写",
+        "iconPath": "static/tabbar/dictation.png",
+        "selectedIconPath": "static/tabbar/dictation-active.png"
+      },
+      {
+        "pagePath": "pages/groups/index",
+        "text": "组别",
+        "iconPath": "static/tabbar/groups.png",
+        "selectedIconPath": "static/tabbar/groups-active.png"
+      },
+      {
+        "pagePath": "pages/ocr/index",
+        "text": "识别",
+        "iconPath": "static/tabbar/ocr.png",
+        "selectedIconPath": "static/tabbar/ocr-active.png"
+      },
+      {
+        "pagePath": "pages/settings/index",
+        "text": "设置",
+        "iconPath": "static/tabbar/settings.png",
+        "selectedIconPath": "static/tabbar/settings-active.png"
+      }
+    ]
+  }
+}

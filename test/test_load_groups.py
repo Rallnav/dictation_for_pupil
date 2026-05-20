@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-测试 GroupManager 是否加载了所有文件
+测试 GroupService 是否加载了所有文件
 """
 
 import sys
 sys.path.insert(0, '../')
-from group_manager import GroupManager
+from services import GroupService
 from pathlib import Path
 
 
@@ -26,17 +26,17 @@ def test_load_groups():
         print(f"  - {file.name}")
         print(f"    大小: {file.stat().st_size} bytes")
     
-    # 创建 GroupManager 实例
-    manager = GroupManager(groups_dir="../groups")
+    # 创建 GroupService 实例
+    service = GroupService(groups_dir="../groups")
     
     # 测试加载组别
-    groups = manager.get_groups()
+    groups = service.get_groups()
     print(f"\n✓ 加载了 {len(groups)} 个组别")
     
     # 查看文件映射
     print("\n文件映射:")
     file_groups = {}
-    for group_id, file_path in manager._group_file_map.items():
+    for group_id, file_path in service._group_file_map.items():
         file_name = file_path.name
         if file_name not in file_groups:
             file_groups[file_name] = []

@@ -1,0 +1,36 @@
+{
+  "groups": {
+    "basic": {
+      "name": "基础单词",
+      "content": ["apple", "book", "cat", "dog", "egg", "fish", "girl", "hand"]
+    },
+    "numbers": {
+      "name": "数字单词",
+      "content": ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+    },
+    "colors": {
+      "name": "颜色单词",
+      "content": ["red", "blue", "green", "yellow", "black", "white", "purple", "orange"]
+    },
+    "animals": {
+      "name": "动物单词",
+      "content": ["cat", "dog", "bird", "fish", "rabbit", "horse", "cow", "pig"]
+    },
+    "family": {
+      "name": "家庭成员",
+      "content": ["father", "mother", "brother", "sister", "son", "daughter", "grandfather", "grandmother"]
+    },
+    "food": {
+      "name": "食物",
+      "content": ["rice", "bread", "meat", "fish", "egg", "milk", "water", "juice"]
+    },
+    "school": {
+      "name": "学校相关",
+      "content": ["book", "pen", "desk", "chair", "teacher", "student", "classroom", "school"]
+    },
+    "weather": {
+      "name": "天气",
+      "content": ["sunny", "rainy", "cloudy", "windy", "snowy", "hot", "cold", "warm"]
+    }
+  }
+}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>听写软件 - 前端版</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>🎧 听写软件</h1>
+            <div class="config-toggle">
+                <label class="switch">
+                    <input type="checkbox" id="useBackend">
+                    <span class="slider"></span>
+                </label>
+                <span>启用后台</span>
+            </div>
+        </header>
+
+        <!-- 导航 -->
+        <nav class="nav">
+            <button class="nav-btn active" data-tab="dictation">开始听写</button>
+            <button class="nav-btn" data-tab="groups">组别管理</button>
+            <button class="nav-btn" data-tab="settings">系统设置</button>
+            <button class="nav-btn" data-tab="ocr">文字识别</button>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main">
+            <!-- 听写界面 -->
+            <section id="dictation" class="tab-content active">
+                <div class="card">
+                    <h2>选择听写组别</h2>
+                    <div class="group-list" id="groupList">
+                        <!-- 动态生成组别列表 -->
+                    </div>
+                    <div class="selected-info">
+                        <span>已选择 <span id="selectedCount">0</span> 个组别</span>
+                    </div>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>间隔时间：</label>
+                            <input type="number" id="interval" value="3" min="1" max="30">
+                            <span>秒</span>
+                        </div>
+                        <div class="control-group">
+                            <label>重复次数：</label>
+                            <input type="number" id="repeatCount" value="2" min="1" max="10">
+                            <span>次</span>
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="shuffle" checked>
+                            随机打乱顺序
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="longWordExtension" checked>
+                            长词延长（超过4个字母增加1秒）
+                        </label>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="startDictation" class="btn btn-primary">开始听写</button>
+                        <button id="pauseDictation" class="btn btn-warning" disabled>暂停</button>
+                        <button id="stopDictation" class="btn btn-danger" disabled>停止</button>
+                    </div>
+                    <div class="progress" id="progress">
+                        <div class="progress-bar" id="progressBar"></div>
+                        <span id="progressText">等待开始...</span>
+                    </div>
+                    <div class="dictated-words" id="dictatedWords">
+                        <h3>已听写单词：</h3>
+                        <div id="wordsList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 组别管理 -->
+            <section id="groups" class="tab-content">
+                <div class="card">
+                    <h2>组别管理</h2>
+                    <div class="toolbar">
+                        <button id="addGroup" class="btn btn-primary">添加组别</button>
+                        <button id="importGroups" class="btn btn-secondary">导入组别</button>
+                        <button id="exportGroups" class="btn btn-secondary">导出组别</button>
+                    </div>
+                    <table id="groupsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>词汇数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupsTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 添加/编辑组别弹窗 -->
+                <div id="groupModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3 id="modalTitle">添加组别</h3>
+                        <form id="groupForm">
+                            <input type="hidden" id="groupId">
+                            <div class="form-group">
+                                <label>组别ID：</label>
+                                <input type="text" id="groupFormId" required>
+                            </div>
+                            <div class="form-group">
+                                <label>组别名称：</label>
+                                <input type="text" id="groupFormName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>词汇（每行一个）：</label>
+                                <textarea id="groupFormContent" rows="6" required></textarea>
+                            </div>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-primary">保存</button>
+                                <button type="button" id="cancelModal" class="btn btn-secondary">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 系统设置 -->
+            <section id="settings" class="tab-content">
+                <div class="card">
+                    <h2>系统设置</h2>
+                    <div class="settings-form">
+                        <div class="setting-item">
+                            <label>后台服务地址：</label>
+                            <input type="text" id="backendUrl" value="http://localhost:8000">
+                        </div>
+                        <div class="setting-item">
+                            <label>语音类型：</label>
+                            <select id="voiceType">
+                                <option value="zh-CN-XiaoxiaoNeural">中文-晓晓</option>
+                                <option value="zh-CN-YunxiNeural">中文-云希</option>
+                                <option value="zh-CN-YunyangNeural">中文-云扬</option>
+                                <option value="en-US-AriaNeural">英文-Aria</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>默认间隔时间：</label>
+                            <input type="number" id="defaultInterval" value="3" min="1" max="30">
+                            <span>秒</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>默认重复次数：</label>
+                            <input type="number" id="defaultRepeat" value="2" min="1" max="10">
+                            <span>次</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>自动保存：</label>
+                            <label class="switch">
+                                <input type="checkbox" id="autoSave" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <button id="saveSettings" class="btn btn-primary">保存设置</button>
+                        <button id="resetSettings" class="btn btn-secondary">恢复默认</button>
+                        <button id="clearData" class="btn btn-danger">清除所有数据</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 文字识别 -->
+            <section id="ocr" class="tab-content">
+                <div class="card">
+                    <h2>📷 文字识别</h2>
+                    <p class="description">使用手机摄像头拍摄课本上的单词，自动识别并添加到组别中</p>
+                    <div class="ocr-container">
+                        <div class="video-wrapper">
+                            <video id="video" autoplay playsinline></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                        </div>
+                        <div class="ocr-controls">
+                            <button id="startCamera" class="btn btn-primary">开启摄像头</button>
+                            <button id="captureImage" class="btn btn-secondary" disabled>拍照识别</button>
+                            <button id="uploadImage" class="btn btn-secondary">上传图片</button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                        </div>
+                        <div class="ocr-result">
+                            <h3>识别结果：</h3>
+                            <div id="ocrText"></div>
+                            <div class="ocr-actions">
+                                <button id="addToGroup" class="btn btn-primary" disabled>添加到组别</button>
+                                <button id="clearOcr" class="btn btn-secondary">清除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 通知提示 -->
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <!-- 引入依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 
 import sys
 sys.path.insert(0, '../')
-from group_manager import GroupManager
+from services import GroupService, AudioService
 from pathlib import Path
 
 
@@ -15,48 +15,63 @@ def test_long_word_extension():
     print("测试长词延长功能")
     print("=" * 50)
     
-    # 创建 GroupManager 实例
-    manager = GroupManager(groups_dir="../groups")
+    # 创建 GroupService 实例
+    service = GroupService(groups_dir="../groups")
     
     # 测试获取长词延长配置
-    long_word_extension = manager.get_long_word_extension()
+    long_word_extension = service.get_long_word_extension()
     print(f"✓ 长词延长功能默认值: {long_word_extension}")
     
     # 测试设置长词延长配置
-    manager.set_long_word_extension(False)
-    new_value = manager.get_long_word_extension()
+    service.set_long_word_extension(False)
+    new_value = service.get_long_word_extension()
     print(f"✓ 长词延长功能设置为: {new_value}")
     
     # 恢复默认值
-    manager.set_long_word_extension(True)
-    final_value = manager.get_long_word_extension()
+    service.set_long_word_extension(True)
+    final_value = service.get_long_word_extension()
     print(f"✓ 长词延长功能恢复为: {final_value}")
     
     print("\n✓ 长词延长功能测试通过")
 
 
-def test_group_manager():
-    """测试组别管理器"""
-    print("\n测试组别管理器")
+def test_group_service():
+    """测试组别服务"""
+    print("\n测试组别服务")
     print("=" * 50)
     
-    # 创建 GroupManager 实例
-    manager = GroupManager(groups_dir="../groups")
+    # 创建 GroupService 实例
+    service = GroupService(groups_dir="../groups")
     
     # 测试加载组别
-    groups = manager.get_groups()
+    groups = service.get_groups()
     print(f"✓ 加载了 {len(groups)} 个组别")
     
     # 测试获取配置
-    interval = manager.get_interval()
-    repeat_count = manager.get_repeat_count()
-    selected_groups = manager.get_selected_groups()
+    interval = service.get_interval()
+    repeat_count = service.get_repeat_count()
+    selected_groups = service.get_selected_groups()
     
     print(f"✓ 间隔时间: {interval} 秒")
     print(f"✓ 重复次数: {repeat_count} 次")
     print(f"✓ 选中的组别: {len(selected_groups)} 个")
     
-    print("\n✓ 组别管理器测试通过")
+    print("\n✓ 组别服务测试通过")
+
+
+def test_audio_service():
+    """测试音频服务"""
+    print("\n测试音频服务")
+    print("=" * 50)
+    
+    # 创建 AudioService 实例
+    audio_service = AudioService()
+    
+    print(f"✓ AudioService 初始化成功")
+    print(f"✓ 缓存目录: {audio_service.cache_dir}")
+    print(f"✓ 使用 edge-tts: {audio_service.use_edge_tts}")
+    
+    print("\n✓ 音频服务测试通过")
 
 
 def test_groups_directory():
@@ -87,7 +102,8 @@ def main():
     print("=" * 60)
     
     test_long_word_extension()
-    test_group_manager()
+    test_group_service()
+    test_audio_service()
     test_groups_directory()
     
     print("\n" + "=" * 60)

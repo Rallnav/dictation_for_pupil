@@ -1,0 +1,26 @@
+{
+  "name": "dictation-for-pupil",
+  "appid": "",
+  "description": "听写软件小程序版本",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.camera": {
+        "desc": "用于拍摄课本单词进行OCR识别"
+      }
+    },
+    "requiredPrivateInfos": ["chooseImage"]
+  },
+  "uniStatistics": {
+    "enable": false
+  }
+}

@@ -6,7 +6,7 @@
 
 import sys
 sys.path.insert(0, '../')
-from group_manager import GroupManager
+from services import GroupService
 
 
 def test_group_ids():
@@ -14,11 +14,11 @@ def test_group_ids():
     print("测试重复的组别 ID 处理")
     print("=" * 50)
     
-    # 创建 GroupManager 实例
-    manager = GroupManager(groups_dir="../groups")
+    # 创建 GroupService 实例
+    service = GroupService(groups_dir="../groups")
     
     # 测试加载组别
-    groups = manager.get_groups()
+    groups = service.get_groups()
     print(f"✓ 加载了 {len(groups)} 个组别")
     
     # 统计重复的原始组别 ID
@@ -51,17 +51,17 @@ def test_group_ids():
     
     # 测试添加新组别
     print("\n测试添加新组别:")
-    new_group_id = manager.add_group('group1', '新测试组别', ['测试1', '测试2'])
+    new_group_id = service.add_group('group1', '新测试组别', ['测试1', '测试2'])
     print(f"✓ 成功添加组别，新的组别 ID: {new_group_id}")
     
     # 重新加载并检查
-    new_manager = GroupManager(groups_dir="../groups")
-    new_groups = new_manager.get_groups()
+    new_service = GroupService(groups_dir="../groups")
+    new_groups = new_service.get_groups()
     print(f"✓ 重新加载后共有 {len(new_groups)} 个组别")
     
     # 清理测试组别
     if new_group_id in new_groups:
-        new_manager.delete_group(new_group_id)
+        new_service.delete_group(new_group_id)
         print(f"✓ 成功删除测试组别: {new_group_id}")
     
     print("\n" + "=" * 50)
